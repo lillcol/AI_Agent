@@ -17,10 +17,10 @@ from urllib.parse import quote
 
 if __package__ is None or __package__ == "":
     # Keep imports working when running this file directly:
-    # python src/ai_agent/learning/stage_00_foundation/weather_info_demo.py
+    # python src/ai_agent/learning/stage_01_native_llm/weather_info_demo.py
     #
     # Current file path:
-    # .../AI_Agent/src/ai_agent/learning/stage_00_foundation/weather_info_demo.py
+    # .../AI_Agent/src/ai_agent/learning/stage_01_native_llm/weather_info_demo.py
     # parents[3] points to .../AI_Agent/src
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
@@ -170,4 +170,4 @@ def main(city: str | None = None) -> None:
 
 
 if __name__ == "__main__":
-    main("广州")
+    main()

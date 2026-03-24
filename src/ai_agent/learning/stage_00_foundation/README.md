@@ -29,3 +29,7 @@ PYTHONPATH=src python -m ai_agent.learning.stage_00_foundation.react_hello_world
 ```bash
 python src/ai_agent/learning/stage_00_foundation/react_hello_world.py
 ```
+
+## Stage Note
+
+天气示例已迁移到 `stage_01_native_llm`，因为它更符合“原生 LLM 调用 + 外部 API 数据总结”的学习目标。

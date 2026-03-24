@@ -51,9 +51,12 @@ AI_Agent/
         │   ├── __init__.py
         │   ├── README.md
         │   ├── stage_00_foundation/
-        │   │   └── README.md
+        │   │   ├── __init__.py
+        │   │   ├── README.md
+        │   │   └── react_hello_world.py
         │   ├── stage_01_native_llm/
-        │   │   └── README.md
+        │   │   ├── README.md
+        │   │   └── weather_info_demo.py
         │   ├── stage_02_tools_function_calling/
         │   │   └── README.md
         │   ├── stage_03_react_agent/
@@ -128,8 +131,15 @@ AI_Agent/
 - Stage 07：`src/ai_agent/learning/stage_07_multi_agent/README.md`
 - Stage 08：`src/ai_agent/learning/stage_08_evaluation_observability/README.md`
 
-Stage 00 已包含可运行的极简 ReAct Hello World：
-`PYTHONPATH=src python -m ai_agent.learning.stage_00_foundation.react_hello_world "3的5次方等于多少？"`
+Stage 00 runnable demo:
+
+- DeepSeek hello world:
+  `PYTHONPATH=src python -m ai_agent.learning.stage_00_foundation.react_hello_world "3的5次方等于多少？"`
+
+Stage 01 runnable demo:
+
+- Weather summary demo (AMap + DeepSeek):
+  `python src/ai_agent/learning/stage_01_native_llm/weather_info_demo.py 广州`
 
 ## 配置安全约定（公共/私有）
 
