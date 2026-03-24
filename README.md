@@ -128,6 +128,9 @@ AI_Agent/
 - Stage 07：`src/ai_agent/learning/stage_07_multi_agent/README.md`
 - Stage 08：`src/ai_agent/learning/stage_08_evaluation_observability/README.md`
 
+Stage 00 已包含可运行的极简 ReAct Hello World：
+`PYTHONPATH=src python -m ai_agent.learning.stage_00_foundation.react_hello_world "3的5次方等于多少？"`
+
 ## 配置安全约定（公共/私有）
 
 - 可提交：`.env.example`、`configs/public.yaml`、`configs/private.example.yaml`
