@@ -22,6 +22,14 @@ dist/
 
 # Environment files
 .env
+.env.*
+!.env.example
+
+# Private config files (never commit secrets)
+configs/private*.yaml
+configs/private*.yml
+!configs/private.example.yaml
+!configs/private.example.yml
 
 # IDE
 .idea/

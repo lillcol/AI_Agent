@@ -1,0 +1,7 @@
+# Public configuration (safe to commit)
+app:
+  name: ai-agent-learning
+  env: dev
+
+logging:
+  level: INFO

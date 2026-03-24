@@ -18,6 +18,11 @@ AI_Agent/
 ├── pyproject.toml
 ├── requirements.txt
 ├── README.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── configs/
+│   ├── public.yaml
+│   └── private.example.yaml
 ├── logs/
 │   └── .gitkeep
 └── src/
@@ -42,6 +47,27 @@ AI_Agent/
         │   │   └── __init__.py
         │   └── langgraph/
         │       └── __init__.py
+        ├── learning/
+        │   ├── __init__.py
+        │   ├── README.md
+        │   ├── stage_00_foundation/
+        │   │   └── README.md
+        │   ├── stage_01_native_llm/
+        │   │   └── README.md
+        │   ├── stage_02_tools_function_calling/
+        │   │   └── README.md
+        │   ├── stage_03_react_agent/
+        │   │   └── README.md
+        │   ├── stage_04_memory/
+        │   │   └── README.md
+        │   ├── stage_05_rag/
+        │   │   └── README.md
+        │   ├── stage_06_framework_integrations/
+        │   │   └── README.md
+        │   ├── stage_07_multi_agent/
+        │   │   └── README.md
+        │   └── stage_08_evaluation_observability/
+        │       └── README.md
         ├── tools/
         │   └── __init__.py
         └── utils/
@@ -56,6 +82,10 @@ AI_Agent/
 - `.editorconfig`：跨编辑器统一缩进、换行、编码风格，减少格式差异。
 - `pyproject.toml`：Python 项目基础配置与代码规范配置（如 Ruff）。
 - `requirements.txt`：项目依赖清单（学习阶段保持最小依赖）。
+- `CONTRIBUTING.md`：协作提交约定，帮助长期维护项目风格。
+- `LICENSE`：开源协议（MIT）。
+- `configs/public.yaml`：公共配置（非敏感，可提交 GitHub）。
+- `configs/private.example.yaml`：私有配置模板（敏感信息只写到本地私有文件）。
 - `logs/`：日志文件目录，运行时输出日志（示例为 `app.log`）。
 - `src/ai_agent/`：主源码包根目录，承载所有核心模块。
 
@@ -75,12 +105,33 @@ AI_Agent/
 - `src/ai_agent/frameworks/`：框架适配层，隔离第三方框架与核心逻辑。
   - `frameworks/langchain/`：LangChain 相关适配与桥接代码入口。
   - `frameworks/langgraph/`：LangGraph 相关适配与图编排桥接入口。
+- `src/ai_agent/learning/`：阶段化学习入口，按 Stage 拆分学习任务。
 
 ## 快速开始
 
 1. 创建并激活虚拟环境
 2. 安装依赖：`pip install -r requirements.txt`
 3. 复制环境变量模板：`cp .env.example .env`
+4. 私有配置模板复制：`cp configs/private.example.yaml configs/private.local.yaml`
+
+## 学习入口（按阶段）
+
+- 总入口：`src/ai_agent/learning/README.md`
+- Stage 00：`src/ai_agent/learning/stage_00_foundation/README.md`
+- Stage 01：`src/ai_agent/learning/stage_01_native_llm/README.md`
+- Stage 02：`src/ai_agent/learning/stage_02_tools_function_calling/README.md`
+- Stage 03：`src/ai_agent/learning/stage_03_react_agent/README.md`
+- Stage 04：`src/ai_agent/learning/stage_04_memory/README.md`
+- Stage 05：`src/ai_agent/learning/stage_05_rag/README.md`
+- Stage 06：`src/ai_agent/learning/stage_06_framework_integrations/README.md`
+- Stage 07：`src/ai_agent/learning/stage_07_multi_agent/README.md`
+- Stage 08：`src/ai_agent/learning/stage_08_evaluation_observability/README.md`
+
+## 配置安全约定（公共/私有）
+
+- 可提交：`.env.example`、`configs/public.yaml`、`configs/private.example.yaml`
+- 不可提交：`.env`、`.env.*`、`configs/private.yaml`、`configs/private.local.yaml`
+- 原则：密钥、token、数据库密码等仅放本地私有配置文件
 
 ## 后续扩展建议
 
