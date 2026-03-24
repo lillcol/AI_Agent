@@ -5,3 +5,11 @@ app:
 
 logging:
   level: INFO
+
+services:
+  minimax:
+    base_url: "https://api.minimax.chat/v1"
+  deepseek:
+    base_url: "https://api.deepseek.com"
+  amap_weather:
+    base_url: "https://restapi.amap.com/v3/weather"

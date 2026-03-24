@@ -5,7 +5,10 @@
 #
 # Both are ignored by .gitignore.
 
-providers:
-  openai_api_key: ""
-  anthropic_api_key: ""
-  google_api_key: ""
+services:
+  minimax:
+    api_key: ""
+  deepseek:
+    api_key: ""
+  amap_weather:
+    api_key: ""

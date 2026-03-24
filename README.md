@@ -113,6 +113,7 @@ AI_Agent/
 2. 安装依赖：`pip install -r requirements.txt`
 3. 复制环境变量模板：`cp .env.example .env`
 4. 私有配置模板复制：`cp configs/private.example.yaml configs/private.local.yaml`
+5. 在 `configs/private.local.yaml` 填入你自己的 API Key（不要提交）
 
 ## 学习入口（按阶段）
 
@@ -132,6 +133,20 @@ AI_Agent/
 - 可提交：`.env.example`、`configs/public.yaml`、`configs/private.example.yaml`
 - 不可提交：`.env`、`.env.*`、`configs/private.yaml`、`configs/private.local.yaml`
 - 原则：密钥、token、数据库密码等仅放本地私有配置文件
+
+## API 配置说明（当前已预置）
+
+- `Minimax`
+  - URL：`https://api.minimax.chat/v1`（在 `configs/public.yaml`）
+  - KEY：`services.minimax.api_key`（在 `configs/private.local.yaml`）
+- `DeepSeek`
+  - URL：`https://api.deepseek.com`（在 `configs/public.yaml`）
+  - KEY：`services.deepseek.api_key`（在 `configs/private.local.yaml`）
+- `高德天气`
+  - URL：`https://restapi.amap.com/v3/weather`（在 `configs/public.yaml`）
+  - KEY：`services.amap_weather.api_key`（在 `configs/private.local.yaml`）
+
+配置读取入口已统一在 `src/ai_agent/config/settings.py`，后续代码可通过 `settings.services` 获取。
 
 ## 后续扩展建议
 
