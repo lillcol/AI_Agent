@@ -36,6 +36,38 @@ Stage 02 你要做的是实现一个经典、框架无关的 **Function Calling 
 - 执行：
   - `run(args: dict) -> JSON-serializable result`
 
+### 流程图 1：定义一个工具（Tool）的流程
+
+```text
+┌───────────────────────────────┐
+│ Pick a capability to build    │
+│ e.g. calculator/time/weather  │
+└───────────────┬───────────────┘
+                │
+                v
+┌───────────────────────────────┐
+│ Define tool class:            │
+│ class XxxTool(Tool)           │
+│ 1) name / description          │
+│ 2) input_schema / output_schema│
+│ 3) implement run(args)         │
+└───────────────┬───────────────┘
+                │
+                v
+┌───────────────────────────────┐
+│ Register into singleton       │
+│ ToolRegistry                  │
+│ registry.register(XxxTool())   │
+└───────────────┬───────────────┘
+                │
+                v
+┌───────────────────────────────┐
+│ Use in demo / agent           │
+│ - planner reads schemas       │
+│ - registry.execute(...) runs  │
+└───────────────────────────────┘
+```
+
 #### 2) JSON Schema（为什么需要它）
 
 因为 planner 是 LLM，它需要一个“形状契约（shape contract）”：
@@ -101,6 +133,37 @@ planner 返回 STRICT JSON ONLY（不输出 markdown/额外文本）。
 3. **Answer**
   - LLM -> 根据 tool output JSON 生成简洁最终答案
 
+### 流程图 2：调用工具的流程（Function Calling 执行链路）
+
+```text
+┌───────────────────────────────┐
+│ User question (natural lang)  │
+└───────────────┬───────────────┘
+                │
+                v
+┌───────────────────────────────┐
+│ LLM Planner (call #1)         │
+│ - reads tool definitions      │
+│ - returns STRICT JSON:        │
+│   tool_call / final            │
+└───────────────┬───────────────┘
+                │ tool_call
+                v
+┌───────────────────────────────┐
+│ ToolRegistry.execute(...)      │
+│ - find tool by tool_name      │
+│ - pass arguments into run()   │
+│ - get tool output JSON        │
+└───────────────┬───────────────┘
+                │
+                v
+┌───────────────────────────────┐
+│ LLM Answer (call #2)          │
+│ - input: tool output JSON     │
+│ - output: concise final text  │
+└───────────────────────────────┘
+```
+
 ### 可运行示例
 
 运行 demo：
@@ -145,27 +208,27 @@ orchestrator 会从 registry 自动读取工具列表，因此不需要额外改
 
 ```
 ┌──────────────────────┐
-│  用户问题（文本）   │
+│  User question       │
 └─────────┬────────────┘
           │
-          │ tool planner（第一次 LLM 调用）
+          │ tool planner (LLM call #1)
           v
 ┌────────────────────────┐
 │ LLM Planner             │
-│ 返回严格 JSON：        │
-│ tool_call 或 final      │
+│ returns strict JSON:    │
+│ tool_call or final      │
 └─────────┬──────────────┘
           │ tool_call
           v
 ┌──────────────────────────────┐
-│ ToolRegistry（单例）           │
-│ 按 tool_name 找工具并执行      │
+│ ToolRegistry (singleton)      │
+│ find tool by name and execute │
 └─────────┬────────────────────┘
-          │ 工具结果 JSON
+          │ tool output JSON
           v
 ┌──────────────────────┐
-│ LLM Answer（第二次） │
-│ 输出给用户的简洁答案 │
+│ LLM Answer (call #2)  │
+│ concise final answer  │
 └──────────────────────┘
 ```
 
@@ -221,6 +284,37 @@ Every tool in this scaffold follows the same contract:
   - `output_schema`: JSON Schema describing the tool result shape
 - **Execution**
   - `run(args: dict) -> JSON-serializable result`
+
+### Flowchart 1: How to define a Tool
+
+```text
+┌──────────────────────────────────────┐
+│ Pick a capability (your new tool)    │
+│ e.g. calculator / get_time / weather │
+└───────────────────┬──────────────────┘
+                    │
+                    v
+┌──────────────────────────────────────┐
+│ Implement a Tool class               │
+│ class XxxTool(Tool)                  │
+│ 1) name / description                │
+│ 2) input_schema / output_schema      │
+│ 3) run(args) implementation          │
+└───────────────────┬──────────────────┘
+                    │
+                    v
+┌──────────────────────────────────────┐
+│ Register into the singleton registry │
+│ registry.register(XxxTool())         │
+└───────────────────┬──────────────────┘
+                    │
+                    v
+┌──────────────────────────────────────┐
+│ Use it in demos/agents               │
+│ - planner reads schemas -> arguments │
+│ - registry.execute(...) runs tool    │
+└──────────────────────────────────────┘
+```
 
 Why JSON Schema?
 Since the planner is an LLM, we need a compact “shape contract” so it can put arguments
@@ -306,6 +400,36 @@ Given a user question:
     - tool receives `arguments` as a dict
 3. **Answer**
   - LLM -> concise final response using the tool output JSON
+
+### Flowchart 2: Tool calling execution flow (Function Calling)
+
+```text
+┌──────────────────────────────────────┐
+│ User question (natural language)     │
+└───────────────────┬──────────────────┘
+                    │
+                    v
+┌──────────────────────────────────────┐
+│ LLM Planner (call #1)                │
+│ - reads tool definitions (schemas)   │
+│ - returns STRICT JSON: tool_call/final│
+└───────────────────┬──────────────────┘
+                    │ tool_call
+                    v
+┌──────────────────────────────────────┐
+│ ToolRegistry.execute(...)            │
+│ - find tool by tool_name             │
+│ - pass arguments dict into run()     │
+│ - get tool output JSON               │
+└───────────────────┬──────────────────┘
+                    │
+                    v
+┌──────────────────────────────────────┐
+│ LLM Answer (call #2)                 │
+│ - input: tool output JSON            │
+│ - output: concise final text answer  │
+└──────────────────────────────────────┘
+```
 
 ### Architecture diagram (Plan -> Tool -> Answer)
 
