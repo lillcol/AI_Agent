@@ -40,3 +40,8 @@ configs/private*.yml
 
 # Logs
 logs/*.log
+
+# Node (accidental workspace artifacts)
+node_modules/
+package-lock.json
+package.json
