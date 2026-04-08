@@ -36,12 +36,6 @@ class Tool(ABC):
     In production, you would typically validate inputs against `input_schema`
     and enforce/validate the returned structure against `output_schema`.
 
-    CN: Tool 用于让 LLM 以“请求工具”的方式获得能力（如计算、查询等）。
-    你需要关注的关键点：
-    - name / description：供 planner 选择工具使用
-    - input_schema / output_schema：约束 planner 如何组织 arguments，以及工具返回应该是什么结构
-    - run(args)：执行工具；args 已经是 JSON 解析后的 dict
-    - 真实系统里通常会校验 args 与 input_schema，并校验输出结构是否符合 output_schema
     """
 
     name: ClassVar[str]
@@ -58,10 +52,6 @@ class Tool(ABC):
 
         Returns:
             Any JSON-serializable object (dict/list/str/number/bool).
-
-        CN:
-        - args 是已经被 JSON 解析后的参数 dict，不是用户原始文本
-        - 返回值必须能被 JSON 序列化，才能继续被后续步骤（提示/日志/最终回答）使用
         """
 
     def invoke(self, args: dict[str, Any]) -> Any:
@@ -69,10 +59,6 @@ class Tool(ABC):
 
         We keep this method so future orchestration layers can hook in
         cross-cutting concerns (logging, metrics, retries) without touching Tool implementations.
-
-        CN:
-        - invoke() 是 run() 的薄封装
-        - 后续如果你要加日志/重试/指标，只需要在这里动，不要改工具本身
         """
         return self.run(args)
 
@@ -83,10 +69,6 @@ class Tool(ABC):
         The demo uses an LLM planner that reads this definition and chooses:
         - tool_name
         - arguments (must match the schema descriptions)
-
-        CN:
-        这个方法把工具的元信息和 schemas 组合成 planner 可读的结构。
-        规划器会根据它生成 arguments，然后调用 run(args)。
         """
         return {
             "name": cls.name,
