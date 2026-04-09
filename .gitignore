@@ -41,6 +41,9 @@ configs/private*.yml
 # Logs
 logs/*.log
 
+# Local sandbox: Minimax image generation experiments (not tracked)
+src/ai_agent/minimax_image_lab/
+
 # Node (accidental workspace artifacts)
 node_modules/
 package-lock.json

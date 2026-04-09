@@ -25,27 +25,16 @@ if __package__ is None or __package__ == "":
 # Imports are now safe for both:
 # - module execution: `PYTHONPATH=src python -m ...`
 # - direct script execution: `python path/to/file.py ...`
-from ai_agent.config.settings import settings
+from ai_agent.core.llm.factory import build_deepseek_client
 from ai_agent.tools import FunctionCallingOrchestrator, registry
 from ai_agent.tools.examples.amap_weather import AMapWeatherTool
 from ai_agent.tools.examples.calculator import CalculatorTool
 from ai_agent.tools.examples.get_time import GetTimeTool
 
 
-# Import the existing native LLM client without changing it.
-# DeepSeekClient.chat(user_query: str) -> str matches orchestrator expectations.
-from ai_agent.learning.stage_00_foundation.react_hello_world import DeepSeekClient  # noqa: E402
-
-
 def main() -> None:
-    # 1) Load DeepSeek config (URL + key) from merged settings.
-    # Reuse the existing native LLM client; do not add provider logic here.
-    deepseek_cfg = settings.services.get("deepseek", {})
-    base_url = deepseek_cfg.get("base_url", "")
-    api_key = deepseek_cfg.get("api_key", "")
-
-    # This demo assumes `configs/private.local.yaml` already contains `api_key`.
-    llm_client = DeepSeekClient(base_url=base_url, api_key=api_key)
+    # 1) Build DeepSeek client via centralized factory.
+    llm_client = build_deepseek_client()
 
     # 2) Register tools into the singleton `ToolRegistry`.
     # If there is a name conflict, `register()` overwrites (safe for re-runs).

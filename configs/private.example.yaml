@@ -7,6 +7,7 @@
 
 services:
   minimax:
+    # Used for chat-compatible APIs on base_url and for image_generation on image_base_url.
     api_key: ""
   deepseek:
     api_key: ""

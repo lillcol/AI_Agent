@@ -36,7 +36,9 @@ AI_Agent/
         │   ├── agent/
         │   │   └── __init__.py
         │   ├── llm/
-        │   │   └── __init__.py
+        │   │   ├── __init__.py
+        │   │   ├── clients.py
+        │   │   └── factory.py
         │   ├── memory/
         │   │   └── __init__.py
         │   └── rag/
@@ -96,7 +98,7 @@ AI_Agent/
   - `settings.py`：统一配置入口，提供全局可读取的配置对象。
 
 - `src/ai_agent/core/`：核心能力层，放与具体框架无关的 Agent 核心抽象。
-  - `core/llm/`：模型调用抽象层，后续用于封装原生 LLM 调用。
+  - `core/llm/`：模型调用抽象层；客户端定义在 `core/llm/clients.py`，初始化入口在 `core/llm/factory.py`。
   - `core/agent/`：Agent 行为编排层，后续用于 ReAct、Function Calling 等流程。
   - `core/memory/`：记忆层，后续扩展短期/长期记忆与存储接口。
   - `core/rag/`：RAG 层，后续扩展检索、重排序、上下文拼装流程。

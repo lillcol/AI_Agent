@@ -9,6 +9,8 @@ logging:
 services:
   minimax:
     base_url: "https://api.minimax.chat/v1"
+    # Text-to-image API host (often differs from chat base_url; see Minimax docs).
+    image_base_url: "https://api.minimaxi.com/v1"
   deepseek:
     base_url: "https://api.deepseek.com"
   amap_weather:

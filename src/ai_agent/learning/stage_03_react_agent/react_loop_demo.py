@@ -30,13 +30,11 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 
-from ai_agent.config.settings import settings
+from ai_agent.core.llm.factory import build_deepseek_client
+from ai_agent.core.llm.clients import DeepSeekClient
 from ai_agent.tools import registry
 from ai_agent.tools.examples.calculator import CalculatorTool
 from ai_agent.utils.logger import setup_logger
-
-# Reuse your existing native LLM client without modifying it.
-from ai_agent.learning.stage_00_foundation.react_hello_world import DeepSeekClient
 
 
 @dataclass
@@ -304,14 +302,6 @@ class CalculatorReActAgent:
 
 
 def main() -> None:
-    # Read DeepSeek config from merged settings.
-    deepseek_cfg = settings.services.get("deepseek", {})
-    base_url = deepseek_cfg.get("base_url", "")
-    api_key = deepseek_cfg.get("api_key", "")
-
-    if not base_url or not api_key:
-        raise RuntimeError("Missing deepseek.base_url/api_key in configs/public.yaml + configs/private.local.yaml")
-
     # Get user question:
     # - CLI arg preferred
     # - fallback to stdin
@@ -321,7 +311,7 @@ def main() -> None:
     if not question:
         raise RuntimeError("Empty question.")
 
-    llm_client = DeepSeekClient(base_url=base_url, api_key=api_key)
+    llm_client = build_deepseek_client()
     agent = CalculatorReActAgent(llm_client=llm_client, max_steps=6)
 
     state = agent.run(question)
