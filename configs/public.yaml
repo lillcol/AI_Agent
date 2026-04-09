@@ -15,3 +15,13 @@ services:
     base_url: "https://api.deepseek.com"
   amap_weather:
     base_url: "https://restapi.amap.com/v3/weather"
+
+memory:
+  long_term:
+    write_keywords:
+      - "方法"
+      - "叫什么"
+      - "how"
+      - "method"
+      - "偏好"
+      - "preference"

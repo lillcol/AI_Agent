@@ -20,32 +20,23 @@ if __package__ is None or __package__ == "":
     # python src/ai_agent/learning/stage_04_memory/memory_react_demo.py
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
+from ai_agent.utils.bootstrap import ensure_src_on_path
 from ai_agent.core.memory import LongTermMemoryFile, MemoryManager, ShortTermMemory
+from ai_agent.config.settings import settings
 from ai_agent.core.llm.factory import build_deepseek_client
 from ai_agent.core.llm.clients import DeepSeekClient
 from ai_agent.tools import registry
 from ai_agent.tools.examples.calculator import CalculatorTool
+from ai_agent.utils.interactive import run_repl
+from ai_agent.utils.json_extract import extract_first_json_object
 from ai_agent.utils.logger import setup_logger
 
-
-def _extract_first_json_object(text: str) -> str:
-    start = text.find("{")
-    if start == -1:
-        raise ValueError("No JSON object found in model output.")
-    depth = 0
-    for i in range(start, len(text)):
-        ch = text[i]
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start : i + 1]
-    raise ValueError("Unterminated JSON object in model output.")
+if __package__ is None or __package__ == "":
+    ensure_src_on_path(__file__, parents_to_src=3)
 
 
 def parse_react_output(content: str) -> dict[str, Any]:
-    return json.loads(_extract_first_json_object(content))
+    return json.loads(extract_first_json_object(content))
 
 
 @dataclass
@@ -134,7 +125,8 @@ class MemoryReActAgent:
 
     def _maybe_store_long_term_knowledge(self, user_query: str, answer: str) -> None:
         q = user_query.lower()
-        should_store = any(keyword in q for keyword in ["方法", "叫什么", "how", "method", "偏好", "preference"])
+        keywords = self.memory.long_term_write_keywords or ["方法", "叫什么", "how", "method", "偏好", "preference"]
+        should_store = any(keyword in q for keyword in keywords)
         if should_store:
             topic = "method_explanation"
             content = f"Q: {user_query} | A: {answer}"
@@ -171,10 +163,17 @@ class MemoryReActAgent:
 
 def build_default_agent() -> MemoryReActAgent:
     llm = build_deepseek_client()
+    default_keywords = ["方法", "叫什么", "how", "method", "偏好", "preference"]
+    configured_keywords = (
+        settings.memory.get("long_term", {}).get("write_keywords", default_keywords)
+        if isinstance(settings.memory, dict)
+        else default_keywords
+    )
     memory = MemoryManager(
         # Keep both record count and character budget to avoid prompt explosion.
         short_term=ShortTermMemory(max_records=40, max_chars=6000),
         long_term=LongTermMemoryFile(),
+        long_term_write_keywords=[str(k) for k in configured_keywords],
     )
     return MemoryReActAgent(llm_client=llm, memory=memory, max_steps=5)
 
@@ -193,19 +192,22 @@ def run_scripted_demo(agent: MemoryReActAgent) -> None:
 
 
 def run_interactive(agent: MemoryReActAgent) -> None:
-    print("Interactive mode. Type 'exit' to stop, '/clear' to reset short-term memory.")
-    while True:
-        q = input("You: ").strip()
-        if not q:
-            continue
-        if q.lower() in {"exit", "quit"}:
-            break
-        if q.lower() in {"/clear", ":clear"}:
-            agent.memory.clear_short()
-            print("Agent: short-term memory cleared.")
-            continue
+    def on_message(q: str) -> str:
         result = agent.ask(q)
-        print("Agent:", result.answer)
+        return f"Agent: {result.answer}"
+
+    def on_clear() -> None:
+        agent.memory.clear_short()
+        print("Agent: short-term memory cleared.")
+
+    run_repl(
+        intro="Interactive mode. Type 'exit' to stop, '/clear' to reset short-term memory.",
+        input_prompt="You: ",
+        exit_commands={"exit", "quit"},
+        clear_commands={"/clear", ":clear"},
+        on_message=on_message,
+        on_clear=on_clear,
+    )
 
 
 def show_long_memory_snapshot(agent: MemoryReActAgent, limit: int = 20) -> None:

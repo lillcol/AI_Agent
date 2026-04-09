@@ -30,11 +30,16 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 
+from ai_agent.utils.bootstrap import ensure_src_on_path
 from ai_agent.core.llm.factory import build_deepseek_client
 from ai_agent.core.llm.clients import DeepSeekClient
 from ai_agent.tools import registry
 from ai_agent.tools.examples.calculator import CalculatorTool
+from ai_agent.utils.json_extract import extract_first_json_object
 from ai_agent.utils.logger import setup_logger
+
+if __package__ is None or __package__ == "":
+    ensure_src_on_path(__file__, parents_to_src=3)
 
 
 @dataclass
@@ -63,31 +68,6 @@ class AgentState:
     total_tokens_total: int = 0
 
 
-def _extract_first_json_object(text: str) -> str:
-    """Extract the first JSON object from a string.
-
-    Why:
-    LLM outputs may contain leading text. For this educational scaffold,
-    we tolerate minor formatting and extract the first {...} block.
-
-    """
-
-    start = text.find("{")
-    if start == -1:
-        raise ValueError("No JSON object found in model output.")
-
-    depth = 0
-    for i in range(start, len(text)):
-        ch = text[i]
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start : i + 1]
-    raise ValueError("Unterminated JSON object in model output.")
-
-
 def parse_react_output(content: str) -> dict[str, Any]:
     """Parse LLM output for ReAct demo.
 
@@ -108,7 +88,7 @@ def parse_react_output(content: str) -> dict[str, Any]:
 
     """
 
-    raw_json = _extract_first_json_object(content)
+    raw_json = extract_first_json_object(content)
     return json.loads(raw_json)
 
 

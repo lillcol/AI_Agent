@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
-from urllib.parse import quote
-from urllib import request
 
 from ai_agent.config.settings import settings
+from ai_agent.core.integrations import AMapWeatherClient
 from ai_agent.tools.base import Tool
 from ai_agent.tools.schemas import object_schema, string_property
 
@@ -44,20 +42,11 @@ class AMapWeatherTool(Tool):
         The planner/LLM can then decide how to summarize `raw`.
         """
         amap_cfg = settings.services.get("amap_weather", {})
-        base_url = amap_cfg.get("base_url", "")
-        api_key = amap_cfg.get("api_key", "")
+        client = AMapWeatherClient(
+            base_url=amap_cfg.get("base_url", ""),
+            api_key=amap_cfg.get("api_key", ""),
+        )
         city = str(args.get("city", "")).strip()
         extensions = str(args.get("extensions") or "all")
-
-        city_encoded = quote(city, safe="")
-        url = (
-            f"{base_url.rstrip('/')}/weatherInfo"
-            f"?city={city_encoded}&extensions={extensions}&output=json&key={api_key}"
-        )
-
-        req = request.Request(url, method="GET", headers={"Content-Type": "application/json"})
-        with request.urlopen(req, timeout=60) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-
-        return {"raw": body}
+        return {"raw": client.query_weather(city=city, extensions=extensions)}
 

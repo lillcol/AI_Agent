@@ -35,15 +35,14 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
     return merged
 
 
-def _load_service_config() -> dict[str, Any]:
-    """Load and merge public + private service configuration files."""
+def _load_merged_config() -> dict[str, Any]:
+    """Load and merge public + private config files."""
     root = Path(__file__).resolve().parents[3]
     public_cfg = _read_yaml(root / "configs" / "public.yaml")
     private_cfg = _read_yaml(root / "configs" / "private.yaml")
     private_local_cfg = _read_yaml(root / "configs" / "private.local.yaml")
     merged_private = _deep_merge(private_cfg, private_local_cfg)
-    merged = _deep_merge(public_cfg, merged_private)
-    return merged.get("services", {})
+    return _deep_merge(public_cfg, merged_private)
 
 
 @dataclass(frozen=True)
@@ -54,9 +53,12 @@ class Settings:
     app_env: str = os.getenv("APP_ENV", "dev")
     log_level: str = os.getenv("LOG_LEVEL", "INFO")
     services: dict[str, Any] = field(default_factory=dict)
+    memory: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "services", _load_service_config())
+        merged = _load_merged_config()
+        object.__setattr__(self, "services", merged.get("services", {}))
+        object.__setattr__(self, "memory", merged.get("memory", {}))
 
 
 settings = Settings()

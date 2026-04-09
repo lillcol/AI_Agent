@@ -16,6 +16,7 @@
 - 数据源：高德天气 API（`services.amap_weather.*`）
 - 模型：DeepSeek（`services.deepseek.*`）
 - 流程：获取天气 JSON -> 交给 DeepSeek 生成简洁自然语言总结
+- 抽象复用：天气 HTTP 调用统一复用 `src/ai_agent/core/integrations/amap_weather_client.py`
 
 运行方式：
 

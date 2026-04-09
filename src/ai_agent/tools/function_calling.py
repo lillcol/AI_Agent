@@ -25,15 +25,15 @@ from pathlib import Path
 from typing import Any
 
 if __package__ is None or __package__ == "":
-    # Allow direct execution/import when running this file as a script:
-    # python src/ai_agent/tools/function_calling.py
-    # This makes `from ai_agent...` work by adding ".../AI_Agent/src" to sys.path.
-    # For this file: .../AI_Agent/src/ai_agent/tools/function_calling.py
-    # parents[0]=tools, parents[1]=ai_agent, parents[2]=src
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from ai_agent.utils.bootstrap import ensure_src_on_path
 from ai_agent.tools.registry import ToolRegistry, registry
+from ai_agent.utils.json_extract import extract_first_json_object
 from ai_agent.utils.logger import setup_logger
+
+if __package__ is None or __package__ == "":
+    ensure_src_on_path(__file__, parents_to_src=2)
 
 
 @dataclass(frozen=True)
@@ -46,42 +46,12 @@ class ParsedToolCall:
     answer: str | None
 
 
-def _extract_first_json_object(text: str) -> str:
-    """Extract the first JSON object from a string.
-
-    We assume the output is mostly JSON (strict or near-strict),
-    but we tolerate leading/trailing whitespace.
-
-    Learning note:
-    Many real LLM outputs include small formatting artifacts.
-    For this educational scaffold we keep parsing minimal:
-    - find the first "{" character
-    - scan forward while tracking brace depth
-    - return that object substring
-    """
-    start = text.find("{")
-    if start == -1:
-        raise ValueError("No JSON object found in model output.")
-
-    depth = 0
-    for i in range(start, len(text)):
-        ch = text[i]
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                return text[start : i + 1]
-
-    raise ValueError("Unterminated JSON object in model output.")
-
-
 def parse_planner_output(content: str) -> ParsedToolCall:
     """Parse planner JSON and normalize it into a ParsedToolCall."""
     # Step A: extract the first JSON object substring.
     # Step B: json.loads into a Python dict.
     # Step C: normalize into our strongly-typed ParsedToolCall.
-    raw_json = _extract_first_json_object(content)
+    raw_json = extract_first_json_object(content)
     obj = json.loads(raw_json)
 
     call_type = str(obj.get("type", "")).strip()

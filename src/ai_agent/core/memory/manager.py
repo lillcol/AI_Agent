@@ -16,9 +16,11 @@ class MemoryManager:
         self,
         short_term: ShortTermMemory | None = None,
         long_term: LongTermMemoryFile | None = None,
+        long_term_write_keywords: list[str] | None = None,
     ) -> None:
         self.short_term = short_term or ShortTermMemory()
         self.long_term = long_term or LongTermMemoryFile()
+        self.long_term_write_keywords = [k.lower() for k in (long_term_write_keywords or [])]
 
     def add_short_message(self, role: str, content: str, metadata: dict[str, Any] | None = None) -> None:
         record = MemoryRecord(

@@ -119,6 +119,7 @@ planner 返回 STRICT JSON ONLY（不输出 markdown/额外文本）。
 ```
 
 解析规则：代码会从 LLM 输出中提取 **第一个 JSON 对象**（假设模型输出“基本是 JSON”）。
+该逻辑已抽到统一工具：`src/ai_agent/utils/json_extract.py`，避免 Stage 之间重复实现。
 
 #### 5) 全流程调用链（Plan -> Execute -> Answer）
 
@@ -384,6 +385,8 @@ Allowed planner outputs:
 
 The parser in `function_calling.py` extracts the **first JSON object** from the LLM output.
 So it assumes the model output is “mostly JSON”.
+This JSON-object extraction is now shared via `src/ai_agent/utils/json_extract.py`
+to keep parsing behavior consistent across Stage 02/03/04.
 
 In later stages, you can replace this with a strict JSON parser / schema validator.
 

@@ -16,13 +16,13 @@
 示例功能：
 - 用户输入一个数学表达式/数学题（命令行参数或交互输入）。
 - 初始化运行上下文：
-  - 读取 DeepSeek 配置（`base_url` / `api_key`）。
-  - 创建 `DeepSeekClient` 与 `CalculatorReActAgent`。
+  - 通过 `build_deepseek_client()` 统一初始化模型客户端。
+  - 创建 `CalculatorReActAgent`。
   - 注册 `calculator` 工具到 `ToolRegistry`（保证 demo 可独立运行）。
 - Agent 循环执行（最多 `max_steps`）：
   - 构建 step prompt：`system_instructions` + 用户问题 + 历史执行轨迹（`Execution history so far`）。
   - 调用 LLM 获取严格 JSON（`action` 或 `final`）。
-  - 解析 JSON 到结构化字段（`type/thought/tool/arguments/answer`）。
+  - 通过 `ai_agent.utils.json_extract.extract_first_json_object()` 提取 JSON，再解析为结构化字段（`type/thought/tool/arguments/answer`）。
   - 若 `type=action`：执行 `calculator`，得到 `observation`，写回历史继续下一轮。
   - 若 `type=final`：结束循环并输出最终答案。
 - 状态与可观测性：
@@ -33,6 +33,9 @@
   - 控制台打印 `final_answer`。
   - 控制台打印 token 汇总（calls / prompt / completion / total）。
   - 详细过程落盘到 `logs/app.log`，便于复盘每一步决策与成本。
+- 代码抽象（与当前项目保持一致）：
+  - 直接运行脚本时，使用统一 bootstrap helper：`ai_agent.utils.bootstrap.ensure_src_on_path()`。
+  - JSON 提取逻辑已与 Stage 04 / Function Calling 共享，避免重复实现与行为漂移。
 
 运行方式（推荐直接运行）：
 
@@ -80,6 +83,8 @@ python src/ai_agent/learning/stage_03_react_agent/react_loop_demo.py
 2.8333333333333335
 [Token Usage] calls=6, prompt=1734, completion=167, total=1901
 ```
+
+> 注：上面的日志用于展示调用链路与日志结构；实际 token 数值会随模型版本、上下文长度、时间而变化。
 
 ## System Prompt 设计逻辑（核心）
 
@@ -163,3 +168,11 @@ Rules:
   (repeat until final)
 
 ```
+
+## 相关源码位置（当前版本）
+
+- 主流程：`src/ai_agent/learning/stage_03_react_agent/react_loop_demo.py`
+- 统一模型工厂：`src/ai_agent/core/llm/factory.py`
+- JSON 提取工具：`src/ai_agent/utils/json_extract.py`
+- 直接运行 bootstrap：`src/ai_agent/utils/bootstrap.py`
+- 计算器工具：`src/ai_agent/tools/examples/calculator.py`

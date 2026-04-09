@@ -35,6 +35,9 @@ AI_Agent/
         │   ├── __init__.py
         │   ├── agent/
         │   │   └── __init__.py
+        │   ├── integrations/
+        │   │   ├── __init__.py
+        │   │   └── amap_weather_client.py
         │   ├── llm/
         │   │   ├── __init__.py
         │   │   ├── clients.py
@@ -62,9 +65,11 @@ AI_Agent/
         │   ├── stage_02_tools_function_calling/
         │   │   └── README.md
         │   ├── stage_03_react_agent/
-        │   │   └── README.md
+        │   │   ├── README.md
+        │   │   └── react_loop_demo.py
         │   ├── stage_04_memory/
-        │   │   └── README.md
+        │   │   ├── README.md
+        │   │   └── memory_react_demo.py
         │   ├── stage_05_rag/
         │   │   └── README.md
         │   ├── stage_06_framework_integrations/
@@ -77,6 +82,9 @@ AI_Agent/
         │   └── __init__.py
         └── utils/
             ├── __init__.py
+            ├── bootstrap.py
+            ├── interactive.py
+            ├── json_extract.py
             └── logger.py
 ```
 
@@ -98,6 +106,7 @@ AI_Agent/
   - `settings.py`：统一配置入口，提供全局可读取的配置对象。
 
 - `src/ai_agent/core/`：核心能力层，放与具体框架无关的 Agent 核心抽象。
+  - `core/integrations/`：外部服务集成客户端（如 AMap weather），供 demo 与 tool 共享复用。
   - `core/llm/`：模型调用抽象层；客户端定义在 `core/llm/clients.py`，初始化入口在 `core/llm/factory.py`。
   - `core/agent/`：Agent 行为编排层，后续用于 ReAct、Function Calling 等流程。
   - `core/memory/`：记忆层，后续扩展短期/长期记忆与存储接口。
@@ -105,6 +114,9 @@ AI_Agent/
 
 - `src/ai_agent/tools/`：工具层，后续扩展工具协议、注册中心、工具执行适配。
 - `src/ai_agent/utils/`：通用工具层，放跨模块复用的基础能力。
+  - `bootstrap.py`：脚本直跑时统一注入 `src` 路径，减少重复模板代码。
+  - `json_extract.py`：统一提取 LLM 输出中的首个 JSON 对象，供 ReAct/Function Calling 共享。
+  - `interactive.py`：可复用 REPL 交互循环封装（exit/clear/消息回调）。
   - `logger.py`：日志初始化工具，统一日志格式、级别与输出通道。
 
 - `src/ai_agent/frameworks/`：框架适配层，隔离第三方框架与核心逻辑。
@@ -143,6 +155,20 @@ Stage 01 runnable demo:
 - Weather summary demo (AMap + DeepSeek):
   `python src/ai_agent/learning/stage_01_native_llm/weather_info_demo.py 广州`
 
+Stage 03 runnable demo:
+
+- ReAct calculator loop demo:
+  `python src/ai_agent/learning/stage_03_react_agent/react_loop_demo.py "四加五然后除以 2 再加上 2 的平方最后除以 3"`
+
+Stage 04 runnable demo:
+
+- Memory-enabled ReAct demo (scripted):
+  `python src/ai_agent/learning/stage_04_memory/memory_react_demo.py`
+- Memory-enabled ReAct demo (interactive):
+  `python src/ai_agent/learning/stage_04_memory/memory_react_demo.py --interactive`
+- Show long-term memory snapshot:
+  `python src/ai_agent/learning/stage_04_memory/memory_react_demo.py --show-long-memory`
+
 ## 配置安全约定（公共/私有）
 
 - 可提交：`.env.example`、`configs/public.yaml`、`configs/private.example.yaml`
@@ -152,7 +178,8 @@ Stage 01 runnable demo:
 ## API 配置说明（当前已预置）
 
 - `Minimax`
-  - URL：`https://api.minimax.chat/v1`（在 `configs/public.yaml`）
+  - URL（chat）：`https://api.minimax.chat/v1`（在 `configs/public.yaml`）
+  - URL（image）：`https://api.minimaxi.com/v1`（在 `configs/public.yaml`）
   - KEY：`services.minimax.api_key`（在 `configs/private.local.yaml`）
 - `DeepSeek`
   - URL：`https://api.deepseek.com`（在 `configs/public.yaml`）
@@ -161,7 +188,9 @@ Stage 01 runnable demo:
   - URL：`https://restapi.amap.com/v3/weather`（在 `configs/public.yaml`）
   - KEY：`services.amap_weather.api_key`（在 `configs/private.local.yaml`）
 
-配置读取入口已统一在 `src/ai_agent/config/settings.py`，后续代码可通过 `settings.services` 获取。
+配置读取入口已统一在 `src/ai_agent/config/settings.py`：
+- 服务配置通过 `settings.services` 获取
+- 记忆策略配置（如长期记忆关键词）通过 `settings.memory` 获取
 
 ## 后续扩展建议
 

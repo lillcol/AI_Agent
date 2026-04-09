@@ -8,12 +8,9 @@ Goals:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import sys
 from pathlib import Path
-from urllib import request
-from urllib.parse import quote
 
 if __package__ is None or __package__ == "":
     # Keep imports working when running this file directly:
@@ -25,55 +22,8 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from ai_agent.config.settings import settings
+from ai_agent.core.integrations import AMapWeatherClient
 from ai_agent.core.llm.factory import build_deepseek_client
-
-
-@dataclass
-class WeatherClient:
-    """AMap weather API client.
-
-    Single responsibility: fetch raw weather JSON only.
-    """
-
-    base_url: str
-    api_key: str
-    timeout: int = 60
-
-    def get_weather_info(self, city_name: str) -> dict:
-        """Fetch AMap weather JSON by city name.
-
-        Args:
-            city_name: City name, e.g. "Beijing" / "Xingning".
-
-        Returns:
-            dict: Raw JSON dictionary returned by AMap API.
-        """
-        # City names may contain non-ASCII chars, so URL encoding is required.
-        city_encoded = quote(city_name, safe="")
-
-        # Notes:
-        # - weatherInfo: AMap weather endpoint path
-        # - extensions=all: include forecast data
-        # - output=json: JSON output format
-        # - key: your AMap key from private.local.yaml
-        url = (
-            f"{self.base_url.rstrip('/')}/weatherInfo"
-            f"?city={city_encoded}&extensions=all&output=json&key={self.api_key}"
-        )
-
-        # Use urllib here as a minimal HTTP GET example.
-        req = request.Request(
-            url,
-            method="GET",
-            headers={
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Decode response body into JSON.
-        with request.urlopen(req, timeout=self.timeout) as resp:
-            body = json.loads(resp.read().decode("utf-8"))
-        return body
 
 
 def summarize_weather_with_llm(weather_info: dict) -> str:
@@ -93,7 +43,7 @@ def main(city: str | None = None) -> None:
     # 1) Read service config from centralized settings (AMap + DeepSeek).
     amap_cfg = settings.services.get("amap_weather", {})
     # 2) Initialize weather client.
-    weather_client = WeatherClient(
+    weather_client = AMapWeatherClient(
         base_url=amap_cfg.get("base_url", ""),
         api_key=amap_cfg.get("api_key", ""),
     )
@@ -105,7 +55,7 @@ def main(city: str | None = None) -> None:
     city_name = city or cli_city or "北京"
 
     # 4) Fetch raw weather JSON from AMap.
-    weather_info = weather_client.get_weather_info(city_name)
+    weather_info = weather_client.query_weather(city=city_name, extensions="all")
 
     # 5) Send JSON to DeepSeek and get a concise summary.
     summary = summarize_weather_with_llm(weather_info)
